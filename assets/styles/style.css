@@ -1,0 +1,23 @@
+:root {
+	--theme-background: #f2f2f2;
+	--theme-content: #595959;
+	--theme-accent: #a5a5a5;
+	--theme-accentDark: #7f7f7f;
+	--theme-accentLight: #cccccc;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--theme-background: #040404;
+		--theme-content: #727272;
+		--theme-accent: #252525;
+		--theme-accentDark: #1a1a1a;
+		--theme-accentLight: #505050;
+	}
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
