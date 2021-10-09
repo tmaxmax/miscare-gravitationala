@@ -45,7 +45,7 @@ export default function createGravitationalMovement(props = {}) {
 
 		if (t > tc + ti) {
 			t = t - tc - ti
-			return g * tc * t - k * t * t
+			return t * (g * tc - k * t)
 		}
 
 		return base(t)
