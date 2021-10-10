@@ -2,7 +2,6 @@
 
 import getCSSVariables from './features/cssvars.js'
 import onColorSchemeChange from './features/darkmode.js'
-import detectFrameRate from './features/refreshrate.js'
 import createGravitationalMovement from './function.js'
 import Scale from './scale.js'
 import createTime from './time.js'
@@ -45,20 +44,17 @@ const AXIS_ORIGIN_LABEL = 'O'
 const GRAPH_SIZE_Y = () => AXIS_X_Y_POS() - AXIS_Y_Y_START()
 const GRAPH_SIZE_X = () => AXIS_X_X_END() - AXIS_Y_X_POS()
 
+const FRAME_RATE = 60
 /** @type {import('./scale').ScaleProperties} */
 const scaleProperties = { transitionDuration: 300, transitionFunction: x => 1 - (1 - x) ** 3 }
 /** @type {Scale} */
 let scaleX
 /** @type {Scale} */
 let scaleY
-/** @type {ReturnType<createTime>} */
-let time
 
-globalThis.setup = async () => {
-	const framerate = await detectFrameRate()
+globalThis.setup = () => {
 	createCanvas(windowWidth, windowHeight)
-	frameRate(framerate)
-	time = createTime(1000 / framerate)
+	frameRate(FRAME_RATE)
 	scaleX = new Scale(1, scaleProperties)
 	scaleY = new Scale(GRAPH_SIZE_Y(), scaleProperties)
 	setupUI()
@@ -75,6 +71,7 @@ globalThis.windowResized = () => {
 const f = createGravitationalMovement({ y: 5, periodic: true })
 /** @type {Coords[]} */
 const coords = []
+const time = createTime(1000 / FRAME_RATE)
 
 function resetGraph() {
 	time.reset()
@@ -141,9 +138,9 @@ function setupUI() {
 	pop()
 }
 
-function draw() {
+globalThis.draw = () => {
 	const x = time()
-	const y = f(x / 500)
+	const y = f(x / 1000)
 	coords.push({ x, y })
 
 	if (!scaleX.isGrowing && x * scaleX.scale > GRAPH_SIZE_X()) {
