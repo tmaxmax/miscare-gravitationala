@@ -69,7 +69,7 @@ globalThis.windowResized = () => {
 }
 
 const f = createGravitationalMovement({ y: 5, periodic: true })
-// const f = Math.sqrt
+// const f = x => x
 /** @type {Coords[]} */
 const coords = []
 const time = createTime(1000 / FRAME_RATE)
@@ -161,7 +161,6 @@ function setupUI(fast = false) {
 }
 
 const TIME_REDUCTION = 1000
-const ADDITIONAL_SAMPLES = 3
 
 globalThis.draw = () => {
 	const x = time()
@@ -177,9 +176,10 @@ globalThis.draw = () => {
 		if (dx < 1 && dy < 1) {
 			addCoords = false
 		} else if (dx > 1 || dy > 1) {
-			for (let i = 1; i <= ADDITIONAL_SAMPLES; i++) {
-				const distance = i / (ADDITIONAL_SAMPLES + 1)
-				const nx = lerp(px, x, distance)
+			const samplingFactor = Math.log2(Math.max(dx, dy)) | 0
+			const additionalSamples = (samplingFactor * (samplingFactor + 1)) / 2
+			for (let i = 1; i <= additionalSamples; i++) {
+				const nx = lerp(px, x, i / (additionalSamples + 1))
 				const ny = f(nx / TIME_REDUCTION)
 				coords.push({ x: nx, y: ny })
 			}
