@@ -63,6 +63,8 @@ globalThis.setup = async () => {
 	scaleX = new Scale(1, scaleProperties)
 	scaleY = new Scale(GRAPH_SIZE_Y(), scaleProperties)
 	setupUI()
+	// @ts-ignore
+	globalThis.draw = draw
 }
 
 globalThis.windowResized = () => {
@@ -71,7 +73,8 @@ globalThis.windowResized = () => {
 	draw()
 }
 
-const f = createGravitationalMovement({ v: 10, y: 5, periodic: true })
+// const f = createGravitationalMovement({ v: 10, y: 5, periodic: true })
+const f = Math.sin
 /** @type {Coords[]} */
 const coords = []
 
@@ -140,7 +143,7 @@ function setupUI() {
 	pop()
 }
 
-globalThis.draw = () => {
+function draw() {
 	const x = time()
 	const y = f(x / 500)
 	coords.push({ x, y })
