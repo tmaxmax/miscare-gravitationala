@@ -137,11 +137,13 @@ function setupUI(fast = false) {
 	let lastIndexDrawn = 0
 
 	for (let i = 0; i < coords.length - increment; i += increment) {
-		let c
+		let c,
+			minpy = Infinity
 		for (let j = i + 1; j < i + increment; j++) {
-			if (abs(coords[j].y) < 0.1) {
+			const py = abs(coords[j].y) * scaleY.scale
+			if (py <= 1 && py < minpy) {
 				c = coords[j]
-				break
+				minpy = py
 			}
 		}
 		if (c) {
