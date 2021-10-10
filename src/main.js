@@ -286,23 +286,21 @@ globalThis.draw = () => {
 	pop()
 }
 
-let touchPosX = Number.NaN
-let touchPosY = Number.NaN
+let isValidTouch = false
 
 globalThis.touchStarted = () => {
-	touchPosX = mouseX
-	touchPosY = mouseY
+	isValidTouch = true
 }
 
-/** @type {(e: TouchEvent) => void} */
-globalThis.touchEnded = e => {
-	const deltaX = abs(mouseX - touchPosX)
-	const deltaY = abs(mouseY - touchPosY)
-	if (deltaX > 10 || deltaY > 10 || e.target !== canvas) {
-		return
-	}
+globalThis.touchMoved = () => {
+	isValidTouch = false
+}
 
-	resetGraph()
+globalThis.touchEnded = () => {
+	if (isValidTouch) {
+		resetGraph()
+		return false
+	}
 }
 
 globalThis.keyPressed = () => {
