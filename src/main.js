@@ -3,7 +3,8 @@
 import getCSSVariables from './features/cssvars.js'
 import onColorSchemeChange from './features/darkmode.js'
 import createGravitationalMovement from './function.js'
-import Time from './time.js'
+import Scale from './scale.js'
+import createTime from './time.js'
 
 /**
  * @typedef {{
@@ -43,14 +44,60 @@ const AXIS_ORIGIN_LABEL = 'O'
 const GRAPH_SIZE_Y = () => AXIS_X_Y_POS() - AXIS_Y_Y_START()
 const GRAPH_SIZE_X = () => AXIS_X_X_END() - AXIS_Y_X_POS()
 
-/**
- * @param {number} [sx]
- * @param {number} [sy]
- */
-function setupUI(sx, sy) {
-	sx = sx == null ? GRAPH_SIZE_X() : sx
-	sy = sy == null ? 1 : sy
+const FRAME_RATE = 60
+/** @type {import('./scale').ScaleProperties} */
+const scaleProperties = { transitionDuration: 300, transitionFunction: x => 1 - (1 - x) ** 3 }
+/** @type {Scale} */
+let scaleX
+/** @type {Scale} */
+let scaleY
 
+globalThis.setup = () => {
+	createCanvas(windowWidth, windowHeight)
+	frameRate(FRAME_RATE)
+	scaleX = new Scale(1, scaleProperties)
+	scaleY = new Scale(GRAPH_SIZE_Y(), scaleProperties)
+	setupUI()
+}
+
+globalThis.windowResized = () => {
+	resizeCanvas(windowWidth, windowHeight)
+	setupUI()
+	draw()
+}
+
+const f = createGravitationalMovement({ v: 10, y: 5, periodic: true })
+const time = createTime(1000 / FRAME_RATE)
+/** @type {Coords[]} */
+const coords = []
+
+function resetGraph() {
+	time.reset()
+	scaleX.reset(1)
+	scaleY.reset(GRAPH_SIZE_Y())
+	coords.length = 0
+	setupUI()
+}
+
+function setupPlotContext() {
+	translate(AXIS_Y_X_POS(), AXIS_X_Y_POS())
+	scale(1, -1)
+
+	strokeWeight(AXIS_STROKE_WEIGHT)
+	stroke(theme.content)
+}
+
+/**
+ * @param {Coords} p
+ * @param {Coords} c
+ */
+function drawLine(p, c) {
+	const sx = scaleX.scale
+	const sy = scaleY.scale
+	line(p.x * sx, p.y * sy, c.x * sx, c.y * sy)
+}
+
+function setupUI() {
 	push()
 
 	background(theme.background)
@@ -78,65 +125,52 @@ function setupUI(sx, sy) {
 	line(axisXXStart, axisXYPos, axisXXEnd, axisXYPos)
 
 	pop()
-}
 
-globalThis.setup = () => {
-	createCanvas(windowWidth, windowHeight)
-	frameRate(120)
-	setupUI()
-}
+	push()
+	setupPlotContext()
 
-globalThis.windowResized = () => {
-	resizeCanvas(windowWidth, windowHeight)
-	setupUI()
-	draw()
-}
+	for (let i = 1; i < coords.length; i++) {
+		drawLine(coords[i - 1], coords[i])
+	}
 
-const f = createGravitationalMovement({ v: 10, y: 5, periodic: true })
-const time = new Time()
-/** @type {Coords[]} */
-const coords = []
-
-/** @type {number | undefined} */
-let maxY
-
-function resetGraph() {
-	time.reset()
-	maxY = undefined
-	coords.length = 0
-	setupUI()
+	pop()
 }
 
 globalThis.draw = () => {
-	const x = time.instant()
-	const y = f(x / 1000)
-	const absy = abs(y)
-	if (!maxY || absy > maxY) {
-		maxY = absy
-	}
-	const sx = GRAPH_SIZE_X() / max(x, GRAPH_SIZE_X())
-	const sy = max(GRAPH_SIZE_Y() / max(maxY, 1), 10)
+	const x = time()
+	const y = f(x / 500)
 	coords.push({ x, y })
 
-	if (sy !== GRAPH_SIZE_Y() || sx !== 1) {
-		setupUI(sx, sy)
+	if (!scaleX.isGrowing && x * scaleX.scale > GRAPH_SIZE_X()) {
+		scaleX.grow(x, 1 / 2)
+	}
+	const graphY = y * scaleY.scale
+	const graphSizeY = GRAPH_SIZE_Y()
+	if (!scaleY.isGrowing && graphY > graphSizeY) {
+		const growth = graphSizeY / graphY
+		const standardGrowth = 3 / 5
+		if (growth < standardGrowth) {
+			scaleY.grow(Number.NaN, growth)
+		} else {
+			scaleY.grow(x, standardGrowth)
+		}
+	}
+	if (scaleX.isGrowing || scaleY.isGrowing) {
+		scaleX.grow(x)
+		scaleY.grow(x)
+		setupUI()
+
+		return
+	}
+
+	const l = coords.length
+	if (l === 1) {
+		return
 	}
 
 	push()
-	translate(AXIS_Y_X_POS(), AXIS_X_Y_POS())
-	scale(1, -1)
-
-	strokeWeight(AXIS_STROKE_WEIGHT)
-	stroke(theme.content)
-
-	/** @type {Coords | undefined} */
-	let prevC
-	for (const c of coords) {
-		const prev = prevC || c
-		prevC = c
-		line(prev.x * sx, prev.y * sy, c.x * sx, c.y * sy)
-	}
-
+	setupPlotContext()
+	drawLine(coords[l - 2], coords[l - 1])
 	pop()
 }
 
@@ -144,4 +178,8 @@ globalThis.keyPressed = () => {
 	if (keyCode === ENTER) {
 		resetGraph()
 	}
+}
+
+globalThis.touchEnded = () => {
+	resetGraph()
 }
