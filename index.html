@@ -4,6 +4,9 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Mișcarea gravitațională</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@1,400;1,700;1,900&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="assets/styles/style.css" />
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"
@@ -13,5 +16,27 @@
 		></script>
 		<script type="module" src="src/main.js"></script>
 	</head>
-	<body></body>
+	<body id="app">
+		<main>
+			<h1>Vizualiator mișcare în câmp gravitațional</h1>
+			<div class="controls">
+				<div class="input">
+					<label for="velocity">Viteza inițială (m/s)</label>
+					<input type="number" value="0" min="0" step="any" id="velocity" name="velocity" />
+				</div>
+				<div class="input">
+					<label for="height">Înălțimea inițială (m)</label>
+					<input type="number" value="5" min="0" step="any" id="height" name="height" />
+				</div>
+				<div class="input">
+					<label for="gravity">Accelerație gravitațională (m/s<sup>2</sup>)</label>
+					<input type="number" value="9.80665" min="0" step="any" id="gravity" name="gravity" />
+				</div>
+				<div class="input">
+					<label for="speed">Viteză derulare grafic</label>
+					<input type="range" min="0" max="1" value="0.8" step="any" id="speed" name="speed" />
+				</div>
+			</div>
+		</main>
+	</body>
 </html>

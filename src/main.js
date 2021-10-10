@@ -5,6 +5,7 @@ import onColorSchemeChange from './features/darkmode.js'
 import createGravitationalMovement from './function.js'
 import Scale from './scale.js'
 import createTime from './time.js'
+import input from './features/input.js'
 
 /**
  * @typedef {{
@@ -51,9 +52,13 @@ const scaleProperties = { transitionDuration: 300, transitionFunction: x => 1 - 
 let scaleX
 /** @type {Scale} */
 let scaleY
+/** @type {HTMLCanvasElement} */
+let canvas
 
 globalThis.setup = () => {
-	createCanvas(windowWidth, windowHeight)
+	const p5Canvas = createCanvas(windowWidth, windowHeight)
+	p5Canvas.parent('app')
+	canvas = p5Canvas.elt
 	frameRate(FRAME_RATE)
 	scaleX = new Scale(1, scaleProperties)
 	scaleY = new Scale(GRAPH_SIZE_Y(), scaleProperties)
@@ -68,8 +73,51 @@ globalThis.windowResized = () => {
 	draw()
 }
 
-const f = createGravitationalMovement({ y: 5, periodic: true })
-// const f = x => x - 5
+const MIN_TIME_SPEED = 2000
+const MAX_TIME_SPEED = 100
+
+/** @type {Fn | undefined} */
+let f
+let velocity = Number.NaN,
+	height = Number.NaN,
+	gravity = Number.NaN,
+	speedPercentage = 0.5
+
+function createF() {
+	if (Number.isNaN(velocity) || Number.isNaN(height) || Number.isNaN(gravity)) {
+		return
+	}
+
+	const first = !f
+	f = createGravitationalMovement({ v: velocity, y: height, g: gravity, periodic: true })
+	if (!first) {
+		resetGraph()
+	}
+}
+
+input('#speed', v => {
+	speedPercentage = v
+
+	if (f) {
+		resetGraph()
+	}
+})
+
+input('#velocity', v => {
+	velocity = v
+	createF()
+})
+
+input('#height', v => {
+	height = v
+	createF()
+})
+
+input('#gravity', v => {
+	gravity = v
+	createF()
+})
+
 /** @type {Coords[]} */
 const coords = []
 const time = createTime(1000 / FRAME_RATE)
@@ -162,11 +210,14 @@ function setupUI(fast = false) {
 	pop()
 }
 
-const TIME_REDUCTION = 1000
-
 globalThis.draw = () => {
+	if (!f) {
+		return
+	}
+
 	const x = time()
-	const y = f(x / TIME_REDUCTION)
+	const speed = lerp(MIN_TIME_SPEED, MAX_TIME_SPEED, speedPercentage)
+	const y = f(x / speed)
 	const drawStart = coords.length
 	let addCoords = true
 	if (coords.length > 0) {
@@ -182,7 +233,7 @@ globalThis.draw = () => {
 			const additionalSamples = (samplingFactor * (samplingFactor + 1)) / 2
 			for (let i = 1; i <= additionalSamples; i++) {
 				const nx = lerp(px, x, i / (additionalSamples + 1))
-				const ny = f(nx / TIME_REDUCTION)
+				const ny = f(nx / speed)
 				coords.push({ x: nx, y: ny })
 			}
 		}
@@ -207,6 +258,7 @@ globalThis.draw = () => {
 	if (!growingOnY && graphY > graphSizeY) {
 		const growth = graphSizeY / graphY
 		const standardGrowth = 3 / 5
+		console.log({ growth, standardGrowth })
 		if (growth < standardGrowth) {
 			scaleY.grow(Number.NaN, growth)
 		} else {
@@ -234,12 +286,6 @@ globalThis.draw = () => {
 	pop()
 }
 
-globalThis.keyPressed = () => {
-	if (keyCode === ENTER) {
-		resetGraph()
-	}
-}
-
 let touchPosX = Number.NaN
 let touchPosY = Number.NaN
 
@@ -248,10 +294,11 @@ globalThis.touchStarted = () => {
 	touchPosY = mouseY
 }
 
-globalThis.touchEnded = () => {
+/** @type {(e: TouchEvent) => void} */
+globalThis.touchEnded = e => {
 	const deltaX = abs(mouseX - touchPosX)
 	const deltaY = abs(mouseY - touchPosY)
-	if (deltaX > 10 || deltaY > 10) {
+	if (deltaX > 10 || deltaY > 10 || e.target !== canvas) {
 		return
 	}
 

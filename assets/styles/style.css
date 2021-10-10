@@ -10,14 +10,62 @@
 	:root {
 		--theme-background: #040404;
 		--theme-content: #727272;
+		--theme-input: #999999;
 		--theme-accent: #252525;
 		--theme-accentDark: #1a1a1a;
 		--theme-accentLight: #505050;
 	}
 }
 
+html,
+body {
+	width: 100%;
+}
+
 body {
 	margin: 0;
 	padding: 0;
-	overflow: hidden;
+	background-color: var(--theme-background);
+	overflow-x: hidden;
+}
+
+main {
+	padding: 1em 5%;
+}
+
+h1,
+label,
+input {
+	font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+	color: var(--theme-content);
+}
+
+label {
+	color: var(--theme-content);
+	font-weight: bold;
+}
+
+input {
+	background-color: var(--theme-accentDark);
+	border: 3px solid var(--theme-accent);
+	padding: 0.3em 0.5em;
+	color: var(--theme-input);
+	font-weight: 900;
+	letter-spacing: -0.05em;
+}
+
+.controls {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
+	gap: 1em;
+	width: 100%;
+}
+
+.input {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr 1fr;
 }
