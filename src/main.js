@@ -296,8 +296,9 @@ globalThis.touchMoved = () => {
 	isValidTouch = false
 }
 
-globalThis.touchEnded = () => {
-	if (isValidTouch) {
+/** @type {(e: TouchEvent) => (boolean | undefined)} */
+globalThis.touchEnded = e => {
+	if (isValidTouch && e.target === canvas) {
 		resetGraph()
 		return false
 	}
