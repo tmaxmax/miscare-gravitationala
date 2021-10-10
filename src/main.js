@@ -69,6 +69,7 @@ globalThis.windowResized = () => {
 }
 
 const f = createGravitationalMovement({ y: 5, periodic: true })
+// const f = Math.log
 /** @type {Coords[]} */
 const coords = []
 const time = createTime(1000 / FRAME_RATE)
@@ -99,7 +100,7 @@ function drawLine(p, c) {
 	line(p.x * sx, p.y * sy, c.x * sx, c.y * sy)
 }
 
-function setupUI() {
+function setupUI(fast = false) {
 	push()
 
 	background(theme.background)
@@ -131,8 +132,29 @@ function setupUI() {
 	push()
 	setupPlotContext()
 
-	for (let i = 1; i < coords.length; i++) {
-		drawLine(coords[i - 1], coords[i])
+	const l = coords.length
+	const increment = fast ? Math.log(l) | 0 : 1
+	let lastIndexDrawn = 0
+
+	for (let i = 0; i < coords.length - increment; i += increment) {
+		let c
+		for (let j = i + 1; j < i + increment; j++) {
+			if (abs(coords[j].y) < 0.1) {
+				c = coords[j]
+				break
+			}
+		}
+		if (c) {
+			drawLine(coords[i], c)
+			drawLine(c, coords[i + increment])
+		} else {
+			drawLine(coords[i], coords[i + increment])
+		}
+		lastIndexDrawn = i + increment
+	}
+
+	if (fast && lastIndexDrawn != l - 1) {
+		drawLine(coords[lastIndexDrawn], coords[l - 1])
 	}
 
 	pop()
@@ -146,6 +168,7 @@ globalThis.draw = () => {
 	if (!scaleX.isGrowing && x * scaleX.scale > GRAPH_SIZE_X()) {
 		scaleX.grow(x, 1 / 2)
 	}
+
 	const graphY = y * scaleY.scale
 	const graphSizeY = GRAPH_SIZE_Y()
 	if (!scaleY.isGrowing && graphY > graphSizeY) {
@@ -157,10 +180,11 @@ globalThis.draw = () => {
 			scaleY.grow(x, standardGrowth)
 		}
 	}
+
 	if (scaleX.isGrowing || scaleY.isGrowing) {
 		scaleX.grow(x)
 		scaleY.grow(x)
-		setupUI()
+		setupUI(scaleX.isGrowing || scaleY.isGrowing)
 
 		return
 	}
