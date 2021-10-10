@@ -1,21 +1,39 @@
-export default class Time {
-	/** @type {number | undefined} */
-	#first
+/**
+ * @param {number} initialMedian
+ * @param {number} [tolerance]
+ */
+export default function createTime(initialMedian, tolerance = 1) {
+	let first = Number.NaN,
+		prev = Number.NaN,
+		median = initialMedian
 
-	constructor() {}
-
-	/**
-	 * @returns {number}
-	 */
-	instant() {
+	const time = () => {
 		const now = performance.now()
-		if (typeof this.#first === 'undefined') {
-			this.#first = now
+		const firstInstant = Number.isNaN(first)
+		if (firstInstant) {
+			first = now
 		}
-		return now - this.#first
+		const instant = now - first
+		if (firstInstant) {
+			prev = instant
+			return instant
+		}
+		const delta = instant - prev
+		const medianDiff = delta - median
+		prev = instant
+		if (medianDiff < -tolerance || medianDiff > tolerance) {
+			prev -= medianDiff
+			first += medianDiff
+			return prev
+		}
+		median = lerp(median, delta, 0.5)
+		return prev
 	}
 
-	reset() {
-		this.#first = undefined
+	time.reset = () => {
+		first = prev = Number.NaN
+		median = initialMedian
 	}
+
+	return time
 }
