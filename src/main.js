@@ -304,3 +304,10 @@ globalThis.touchEnded = e => {
 
 	resetGraph()
 }
+
+globalThis.keyPressed = () => {
+	if (key === ' ') {
+		resetGraph()
+		return false
+	}
+}

@@ -35,14 +35,13 @@ main {
 
 h1,
 label,
-input {
+input,
+p {
 	font-family: 'Roboto', sans-serif;
 }
 
-h1 {
-	color: var(--theme-content);
-}
-
+h1,
+p,
 label {
 	color: var(--theme-content);
 	font-weight: bold;
