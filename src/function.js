@@ -15,13 +15,7 @@ const defaultG = 9.80665
  * @return {Fn}
  */
 export default function createGravitationalMovement(props = {}) {
-	/** @type {GravitationalMovementProperties} */
-	const { y, v, g, periodic } = {
-		y: props.y || 0,
-		v: props.v || 0,
-		g: props.g || defaultG,
-		periodic: props.periodic || false,
-	}
+	const { y = 0, v = 0, g = defaultG, periodic = false } = props
 
 	// TODO: Handle negative velocity values
 	if (v < 0) {
