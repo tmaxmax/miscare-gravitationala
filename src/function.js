@@ -34,6 +34,10 @@ export default function createGravitationalMovement(props = {}) {
 	const ti = v / g
 	const period = 2 * tc
 
+	if (hmax === 0) {
+		return () => 0
+	}
+
 	return t => {
 		t = t - ((t / period) | 0) * period
 		return base(t > tc + ti ? t - period : t)
