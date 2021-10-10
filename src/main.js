@@ -45,7 +45,6 @@ const AXIS_ORIGIN_LABEL = 'O'
 const GRAPH_SIZE_Y = () => AXIS_X_Y_POS() - AXIS_Y_Y_START()
 const GRAPH_SIZE_X = () => AXIS_X_X_END() - AXIS_Y_X_POS()
 
-const FRAME_RATE = 120
 /** @type {import('./scale').ScaleProperties} */
 const scaleProperties = { transitionDuration: 300, transitionFunction: x => 1 - (1 - x) ** 3 }
 /** @type {Scale} */
@@ -73,8 +72,7 @@ globalThis.windowResized = () => {
 	draw()
 }
 
-// const f = createGravitationalMovement({ v: 10, y: 5, periodic: true })
-const f = Math.sin
+const f = createGravitationalMovement({ y: 5, periodic: true })
 /** @type {Coords[]} */
 const coords = []
 
