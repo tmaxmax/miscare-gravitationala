@@ -69,7 +69,7 @@ globalThis.windowResized = () => {
 }
 
 const f = createGravitationalMovement({ y: 5, periodic: true })
-// const f = x => x
+// const f = x => x - 5
 /** @type {Coords[]} */
 const coords = []
 const time = createTime(1000 / FRAME_RATE)
@@ -200,7 +200,7 @@ globalThis.draw = () => {
 		scaleX.grow(x, 1 / 2)
 	}
 
-	const graphY = y * scaleY.scale
+	const graphY = abs(y) * scaleY.scale
 	const graphSizeY = GRAPH_SIZE_Y()
 	if (!growingOnY && graphY > graphSizeY) {
 		const growth = graphSizeY / graphY
@@ -238,6 +238,20 @@ globalThis.keyPressed = () => {
 	}
 }
 
+let touchPosX = Number.NaN
+let touchPosY = Number.NaN
+
+globalThis.touchStarted = () => {
+	touchPosX = mouseX
+	touchPosY = mouseY
+}
+
 globalThis.touchEnded = () => {
+	const deltaX = abs(mouseX - touchPosX)
+	const deltaY = abs(mouseY - touchPosY)
+	if (deltaX > 10 || deltaY > 10) {
+		return
+	}
+
 	resetGraph()
 }
